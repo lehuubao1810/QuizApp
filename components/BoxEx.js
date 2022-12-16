@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { StyleSheet, TouchableOpacity, View, Text, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text,
+     Image, Platform, Vibration, TouchableWithoutFeedback,
+     Animated, Easing } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useState, useEffect } from 'react';
 
-// status, level, highScore, quiz
+// status, level, highScore, quiz, isDisabled
 //, navigation
 const BoxEx = (props) => {
     const bgColors = [
@@ -47,40 +49,58 @@ const BoxEx = (props) => {
     }, [props.status]);
 
     return ( 
-        <TouchableOpacity style={[styles.boxExercise, {backgroundColor: bgColor }]}
-            onPress={() => {props.navigation.navigate( 'Quiz', 
-                { 
-                    level: props.level,
-                    questions: props.questions,
-                    time : props.time,
-                    highScore: props.highScore,
-                    status: props.status,
-                    id : props.id,
+        <>
+            <TouchableOpacity disabled={props.isDisable} style={[styles.boxExercise, {backgroundColor: bgColor }]}
+                onPress={() => {props.navigation.navigate( 'Quiz', 
+                    { 
+                        level: props.level,
+                        questions: props.questions,
+                        time : props.time,
+                        highScore: props.highScore,
+                        status: props.status,
+                        id : props.id,
+                    }
+                );
+                props.playSoundTouch();}}
+                activeOpacity={0.6}
+                underlayColor="#DDDDDD"
+            >
+                {
+                props.isDisable ? 
+                <TouchableWithoutFeedback 
+                    onPress={() => {
+                        Vibration.vibrate()
+                        props.setModalVisible(true);
+                        props.playSoundLock();
+                    }}
+                >
+                    <View style={styles.locked}>
+                        <Icon name="lock" size={50} color="#EC8944"/>
+                    </View>
+                </TouchableWithoutFeedback> 
+                : null
                 }
-            );}}
-            activeOpacity={0.6}
-            underlayColor="#DDDDDD"
-        >
-            <View style={styles.boxExerciseItem}>
-                <Image source={{uri: imgSource}} style={styles.star}/>
-                
-                <View style={styles.boxExerciseItemContent}>
-                    <Text style={[
-                        styles.text35Dark,
-                        styles.level, 
-                        {color: textColor }
-                        ]}
-                    >Cấp độ {props.level}</Text>
-                    <Text style={[styles.text25Dark,{color: textColor }]}>
-                        {statusContent}
-                    </Text>
+                <View style={styles.boxExerciseItem}>
+                    <Image source={{uri: imgSource}} style={styles.star}/>
+                    
+                    <View style={styles.boxExerciseItemContent}>
+                        <Text style={[
+                            styles.text35Dark,
+                            styles.level, 
+                            {color: textColor }
+                            ]}
+                        >Cấp độ {props.level}</Text>
+                        <Text style={[styles.text25Dark,{color: textColor }]}>
+                            {statusContent}
+                        </Text>
+                    </View>
                 </View>
-            </View>
-            <View style={styles.boxExerciseItem}>
-                <Text style={[styles.text25Dark, {color: textColor }]}>{action}</Text>
-                <Icon name="chevron-right" size={30} color={textColor} />
-            </View>
-        </TouchableOpacity>
+                <View style={styles.boxExerciseItem}>
+                    <Text style={[styles.text25Dark, {color: textColor }]}>{action}</Text>
+                    <Icon name="chevron-right" size={30} color={textColor} />
+                </View>
+            </TouchableOpacity>
+        </>
     )
 }
 
@@ -100,6 +120,7 @@ const styles = StyleSheet.create({
         paddingRight: 20,
         paddingLeft: 10,
         marginBottom: 20,
+        position: 'relative',
     },
     boxExerciseItem: {
         flexDirection: 'row',
@@ -131,6 +152,17 @@ const styles = StyleSheet.create({
         color: '#642900',
         fontWeight: 'bold',
         fontSize: 18,
+    },
+    locked: {
+        position: 'absolute',
+        zIndex: 1,
+        width: '111%',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 100,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
 });
 

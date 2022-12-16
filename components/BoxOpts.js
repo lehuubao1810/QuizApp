@@ -4,8 +4,37 @@ import { useState, useEffect, useRef } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import IconSub from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Audio } from 'expo-av';
 
 const BoxOpts = (props) => {
+
+    // Sounds Effect
+
+    const [sound, setSound] = useState();
+    async function playSoundRight() {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/right.mp3`));
+        setSound(sound);
+        console.log('Playing Sound');
+        await sound.playAsync();
+    }
+    async function playSoundWrong() {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/wrong.mp3`));
+        setSound(sound);
+        console.log('Playing Sound');
+        await sound.playAsync();
+    }
+    useEffect(() => {
+        return sound
+            ? () => {
+                console.log('Unloading Sound');
+                sound.unloadAsync();
+            }
+            : undefined;
+    }, [sound]);
+    
+    // End Sounds Effect
 
     const propsOpts = props.options;
     const propsTime = props.time;
@@ -29,13 +58,13 @@ const BoxOpts = (props) => {
             )
         })
     );
-    const waitAMinute = () => {
+    const waitASecond = () => {
         // setIsNext(true);
         if(!props.isEnd) {
             setTimeout(() => {
                 props.setIsNext(true);
                 setSelected(false);
-            }, 0);
+            }, 1500);
         }
     }
     useEffect(() => {
@@ -49,7 +78,7 @@ const BoxOpts = (props) => {
           //////////////////
           handleAnswer(-1);////
           //////////////////
-          waitAMinute();
+          waitASecond();
         } else if(props.isEnd) {
             clearInterval(interval);
         }
@@ -57,7 +86,7 @@ const BoxOpts = (props) => {
       }, [time]);
     useEffect(() => {
         if(selected) {
-            waitAMinute();
+            waitASecond();
         } else {
             if(!props.isEnd) setTime(propsTime);
         }
@@ -81,7 +110,6 @@ const BoxOpts = (props) => {
         );
     }, [propsOpts]);
 
-
     const indexAnswer = props.options.indexOf(props.answer);
     // S: Selected, NS: Not Selected
     const statusOptRightS = 
@@ -103,6 +131,7 @@ const BoxOpts = (props) => {
     const handleAnswer = (indexx) => {
         setSelected(true);
         if(indexx == indexAnswer) {
+            playSoundRight();
             props.totalScore.current += 1;
             setOptions(
                 props.options.map((item, index) => {
@@ -131,6 +160,7 @@ const BoxOpts = (props) => {
                 })
             );
         } else {
+            playSoundWrong();
             setOptions(
                 props.options.map((item, index) => {
                     return (

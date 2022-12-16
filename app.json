@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "QuizApp",
+    "name": "Học Toán",
     "slug": "QuizApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,10 +24,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.lehuubao.QuizApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "02c71a91-2881-456e-9285-e0cf1f02c8e6"
+      }
     }
   }
 }

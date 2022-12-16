@@ -9,8 +9,40 @@ import BoxOpts from '../components/BoxOpts';
 import { useState, useEffect, useRef } from 'react';
 import Modal from "react-native-modal";
 
-function QuizScreen({ navigation, route }) {
+import { Audio } from 'expo-av';
 
+function QuizScreen({ navigation, route }) {
+  // Sounds Effect
+  const [sound, setSound] = useState();
+  async function playSoundTouch() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/touch.mp3`));
+    setSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+  async function playSoundSuccess() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/done.mp3`));
+    setSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+  async function playSoundFailure() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/failure.mp3`)
+    );
+    setSound(sound);
+    await sound.playAsync();
+  }
+  useEffect(() => {
+    return sound
+      ? () => {
+        sound.unloadAsync();
+      }
+    : undefined;
+  }, [sound]);
+  // End Sounds Effect
   const updateData = (id, typeData, newData, obj) => {
     // update an anything of id by PATCH method
     fetch(`https://dataquizapp.glitch.me/${obj}/${id}`, {
@@ -70,7 +102,21 @@ function QuizScreen({ navigation, route }) {
       if (!route.params.level) {
         setNearScore(route.params.highScore);
         updateData(route.params.id,"highScore", totalScore.current, "quizsReview")
+        // Play sound effect
+        if (totalScore.current < 6) {
+          playSoundFailure();
+        } else {
+          playSoundSuccess();
+        }
+        // End play sound effect
       } else {
+        // Play sound effect
+        if (totalScore.current < 6) {
+          playSoundFailure();
+        } else {
+          playSoundSuccess();
+        }
+        // End play sound effect
         if (route.params.highScore < totalScore.current) {
           route.params.highScore = totalScore.current;
           updateData(route.params.id,"highScore", totalScore.current, "quizsLevels")
@@ -79,6 +125,9 @@ function QuizScreen({ navigation, route }) {
           updateData(route.params.id,"status", 1, "quizsLevels");
         } else {
           updateData(route.params.id,"status", 2, "quizsLevels");
+          if (route.params.id < 5) {
+            updateData(route.params.id+1,"isDisable", false, "quizsLevels");
+          }
         }
       } 
     }
@@ -101,6 +150,7 @@ function QuizScreen({ navigation, route }) {
         <Text style={styles.numOfQuestion}>{`${indexQuestion.current+1}/10`}</Text>
       </View>
       { question }
+      {}
       <Modal 
         isVisible={isShowResult}
         animationIn="pulse"
@@ -128,7 +178,7 @@ function QuizScreen({ navigation, route }) {
                   index: 0,
                   routes: [{ name: 'HomeTab' }],
                 });
-              ;}}
+              playSoundTouch()}}
             >
               <Ionicons name="home" size={40} color="#642900" />
             </TouchableOpacity>
@@ -136,12 +186,13 @@ function QuizScreen({ navigation, route }) {
               style={styles.repeat}
               activeOpacity={0.6}
               underlayColor="#DDDDDD"
-              onPress={() => {navigation.navigate('Quiz',
-                {
-                  questions: questions, 
-                  level: route.params.level
-                }
-              );}}
+              onPress={() => {
+                // repeat quiz
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Quiz', params: route.params }],
+                });
+              playSoundTouch()}}
             >
               <IconSub name="repeat" size={40} color="#642900" />
             </TouchableOpacity>

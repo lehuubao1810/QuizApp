@@ -2,13 +2,15 @@ import * as React from 'react';
 import { StyleSheet, Button, View, Text, 
     Image, TouchableOpacity, ScrollView, 
     SafeAreaView, StatusBar, ActivityIndicator,
-    Animated } from 'react-native';
+    Animated, Modal } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useState, useEffect, useRef} from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import BoxEx from '../components/BoxEx';
-// import data from '../data/quizLevel.json';
+
+import { Audio } from 'expo-av';
 
 function HomeScreen({ navigation }) {
 
@@ -16,6 +18,7 @@ function HomeScreen({ navigation }) {
     const [quizsReview, setQuizsReview] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         fetch('https://dataquizapp.glitch.me/quizsReview')
@@ -31,6 +34,30 @@ function HomeScreen({ navigation }) {
                 setLoading(false);
             });
     }, []);
+
+    const [sound, setSound] = useState();
+    async function playSoundTouch() {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/touch.mp3`));
+        setSound(sound);
+        console.log('Playing Sound');
+        await sound.playAsync();
+    }
+    async function playSoundLock() {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/wrong.mp3`));
+        setSound(sound);
+        console.log('Playing Sound');
+        await sound.playAsync();
+    }
+    useEffect(() => {
+        return sound
+          ? () => {
+              console.log('Unloading Sound');
+              sound.unloadAsync();
+            }
+          : undefined;
+    }, [sound]);
 
     
     // const avgScore = (highScore.reduce((a, b) => a + b, 0) / highScore.length).toFixed(0);
@@ -66,6 +93,11 @@ function HomeScreen({ navigation }) {
             <Image source={require('../assets/splash.png')} style={styles.logo}/>
         </View>  
 
+        {loading ? 
+            <View style={styles.loading}>
+                <ActivityIndicator size="large" color="#EC8944" />
+            </View>
+            :
         <View style={styles.statistical}>
             <View style={styles.statisticalItem}>
                 <Image source={require('../assets/avg.png')} style={styles.star}/>
@@ -83,25 +115,37 @@ function HomeScreen({ navigation }) {
             </View>
 
         </View>
+        }
 
         <View style={styles.review}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Icon name="hand-point-right" size={20} color="#900" />
                 <Text style={[styles.text25Dark,{marginLeft: 5}]}>Ôn lại kiến thức</Text>
             </View>
-            <TouchableOpacity style={[styles.boxExercise, {backgroundColor: '#B09364' }]}
-            onPress={() => {navigation.navigate('Quiz', 
-                { 
-                    level: false,
-                    questions: quizsReview[0].questions,
-                    time: quizsReview[0].time,
-                    highScore: quizsReview[0].highScore,
-                    status: quizsReview[0].status,
-                    id : quizsReview[0].id,
+
+            {loading ? 
+            <View style={styles.loading}>
+                <ActivityIndicator size="large" color="#EC8944" />
+            </View>
+            :
+            <TouchableOpacity
+                style={[styles.boxExercise, {backgroundColor: '#B09364' }]}
+                onPress={() => {
+                    navigation.navigate('Quiz', 
+                        { 
+                            level: false,
+                            questions: quizsReview[0].questions,
+                            time: quizsReview[0].time,
+                            highScore: quizsReview[0].highScore,
+                            status: quizsReview[0].status,
+                            id : quizsReview[0].id,
+                        }
+                        );
+                        playSoundTouch();
+                    }
                 }
-            );}}
-            activeOpacity={0.6}
-            underlayColor="#DDDDDD"
+                activeOpacity={0.6}
+                underlayColor="#DDDDDD"
             >
                 <View style={styles.boxExerciseItem}>
                     <Image source={require('../assets/brain.png')} style={styles.star}/>
@@ -116,15 +160,38 @@ function HomeScreen({ navigation }) {
                         </Text>
                     </View>
                 </View>
-                <View style={styles.boxExerciseItem}>
-                    <Text></Text>
-                </View>
             </TouchableOpacity>
+            }
         </View>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Icon name="pencil-alt" size={20} color="#900" />
             <Text style={[styles.text25Dark,{marginLeft: 5}]}>Làm bài</Text>
         </View>
+        
+
+        <Modal
+            animationType="pulse"
+            transparent={true}
+            visible={modalVisible}
+        >
+            <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Em cần hoàn thành các bài trước 
+                        <Text style={{color:'#E14242'}}> trên 5 điểm</Text> để mở khóa bài này!
+                    </Text>
+                    <TouchableOpacity
+                        style={styles.backHome}
+                        activeOpacity={0.6}
+                        underlayColor="#DDDDDD"
+                        onPress={() => {
+                            setModalVisible(!modalVisible);
+                        ;playSoundTouch();}}
+                    >
+                        <Ionicons name="md-close" size={50} color={'#E14242'}/>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
         {
             loading ? 
             <View style={styles.loading}>
@@ -145,6 +212,10 @@ function HomeScreen({ navigation }) {
                                 highScore={quiz.highScore}
                                 questions={quiz.questions}
                                 time={quiz.time}
+                                isDisable={quiz.isDisable}
+                                setModalVisible={setModalVisible}
+                                playSoundTouch={playSoundTouch}
+                                playSoundLock={playSoundLock}
                             />
                         )
                     })
@@ -159,7 +230,7 @@ function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
     container: {
-      paddingTop: 50,
+      paddingTop: 25,
       paddingLeft: 30,
       paddingRight: 30,
       height: '100%',
@@ -274,7 +345,31 @@ const styles = StyleSheet.create({
     loading: {
         marginTop: 40,
     },
-
+    // Modal
+    centeredView: {
+        width: '100%',
+        height: '100%',
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalView: { 
+        width: '80%',
+        height: '30%',
+        padding: 20,
+        paddingTop: 40,
+        borderRadius: 20,
+        flexDirection: 'column',
+        justifyContent: "space-between",
+        alignItems: "center",
+        backgroundColor: "#FAEAD9",
+    },
+    modalText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#642900',
+        textAlign: "center",
+    }
 
   });
 
