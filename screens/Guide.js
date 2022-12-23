@@ -27,6 +27,7 @@ function GuideScreen({ navigation }) {
       <Text style={styles.text35Dark}>
         Câu hỏi tổng hợp gồm 10 câu hỏi được lấy ngẫu nhiên trong các câu hỏi thuộc các cấp độ đã hoàn thành với<Text style={{color: '#E14242'}}> thời gian mặc định là 10 giây</Text> 
       </Text>
+      <Text style={styles.textCopyright}> Copyright by Le Huu Bao </Text>
     </View>
   );
 }
@@ -51,6 +52,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
+},
+textCopyright: {
+  marginTop: 20,
+  color: '#642900',
+  fontWeight: 'bold',
+  fontSize: 14,
+  textAlign: 'center',
 },
 });
 export default GuideScreen;
