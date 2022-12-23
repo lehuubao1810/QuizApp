@@ -15,15 +15,16 @@ import { Audio } from 'expo-av';
 function HomeScreen({ navigation }) {
 
     const [quizs, setQuizs] = useState([]);
-    const [quizsReview, setQuizsReview] = useState([]);
+    // const [quizsReview, setQuizsReview] = useState([]);
+    const [reviewData, setReviewData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
-        fetch('https://dataquizapp.glitch.me/quizsReview')
+        fetch('https://dataquizapp.glitch.me/reviewData')
             .then((response) => response.json())
-            .then((json) => setQuizsReview(json))
+            .then((json) => setReviewData(json))
             .catch((error) => console.error(error));
 
         fetch('https://dataquizapp.glitch.me/quizsLevels')
@@ -37,30 +38,25 @@ function HomeScreen({ navigation }) {
 
     const [sound, setSound] = useState();
     async function playSoundTouch() {
-        console.log('Loading Sound');
         const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/touch.mp3`));
         setSound(sound);
-        console.log('Playing Sound');
         await sound.playAsync();
     }
     async function playSoundLock() {
-        console.log('Loading Sound');
         const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/wrong.mp3`));
         setSound(sound);
-        console.log('Playing Sound');
         await sound.playAsync();
     }
     useEffect(() => {
         return sound
           ? () => {
-              console.log('Unloading Sound');
               sound.unloadAsync();
             }
           : undefined;
     }, [sound]);
 
     
-    // const avgScore = (highScore.reduce((a, b) => a + b, 0) / highScore.length).toFixed(0);
+    // Average score
     let avgScore = 10;
     const statisticalLevelArr = Object.keys(quizs).map((key) => {
         return quizs[key].status;
@@ -78,7 +74,75 @@ function HomeScreen({ navigation }) {
         avgScore = 10;
     }
 
-    const highScoreReview = quizsReview[0]==undefined?10:quizsReview[0].highScore;
+    //get questions from quizs
+    const arrQuestion = [];
+    for (let i = 0; i < quizs.length; i++) {
+        if (quizs[i].status > 0) {
+            arrQuestion.push(...quizs[i].questions);
+        }
+    }
+    // random 10 questions from arrQuestion 
+    const arrQuestionRandom = [];
+    for (let i = 0; i < 10; i++) {
+        const random = Math.floor(Math.random() * arrQuestion.length);
+        arrQuestionRandom.push(arrQuestion[random]);
+        arrQuestion.splice(random, 1);
+    }
+    let quizsReview=[
+        {
+            "question": "2 + 2 = ?",
+            "options": ["1", "3", "2", "4"],
+            "answer": "4"
+        },
+        {
+            "question": "2 - 2 = ?",
+            "options": ["1", "3", "2", "0"],
+            "answer": "0"
+        },
+        {
+            "question": "5 - 2 = ?",
+            "options": ["3", "5", "2", "4"],
+            "answer": "3"
+        },
+        {
+            "question": "0 + 2 = ?",
+            "options": ["2", "3", "7", "4"],
+            "answer": "2"
+        },
+        {
+            "question": "0 + 0 = ?",
+            "options": ["5", "6", "0", "4"],
+            "answer": "0"
+        },
+        {
+            "question": "3 + 1 = ?",
+            "options": ["8", "5", "3", "4"],
+            "answer": "4"
+        },
+        {
+            "question": "2 + 3 = ?",
+            "options": ["5", "3", "2", "8"],
+            "answer": "5"
+        },
+        {
+            "question": "4 + 1 = ?",
+            "options": ["1", "3", "5", "4"],
+            "answer": "5"
+        },
+        {
+            "question": "4 - 3 = ?",
+            "options": ["1", "5", "2", "4"],
+            "answer": "1"
+        },
+        {
+            "question": "3 - 1 = ?",
+            "options": ["1", "5", "2", "4"],
+            "answer": "2"
+        }
+    ];
+    if (arrQuestion.length >= 10) {
+        quizsReview=arrQuestionRandom;
+    }
 
   return (
     <View style={styles.container}>
@@ -88,7 +152,7 @@ function HomeScreen({ navigation }) {
                     <Image source={require('../assets/star.png')} style={styles.star}/>
                     <Text style={styles.titleText}>Xin chào</Text>
                 </View>
-                <Text style={styles.text35Tile}>Hãy bắt đầu làm bài nào !</Text>
+                <Text style={styles.text35Tile}>Hãy bắt đầu làm bài nào ⚔</Text>
             </View>
             <Image source={require('../assets/splash.png')} style={styles.logo}/>
         </View>  
@@ -134,11 +198,11 @@ function HomeScreen({ navigation }) {
                     navigation.navigate('Quiz', 
                         { 
                             level: false,
-                            questions: quizsReview[0].questions,
-                            time: quizsReview[0].time,
-                            highScore: quizsReview[0].highScore,
-                            status: quizsReview[0].status,
-                            id : quizsReview[0].id,
+                            questions: quizsReview,
+                            time: 20,
+                            highScore: reviewData[0].recentScore,
+                            // status: reviewData[0].status,
+                            // id : reviewData.id,
                         }
                         );
                         playSoundTouch();
@@ -156,7 +220,7 @@ function HomeScreen({ navigation }) {
                             ]}
                         >Câu hỏi tổng hợp</Text>
                         <Text style={[styles.text25Light]}>
-                            Điểm đạt gần nhất: {highScoreReview} điểm
+                            Điểm đạt gần nhất: {reviewData[0].recentScore} điểm
                         </Text>
                     </View>
                 </View>

@@ -15,21 +15,16 @@ function QuizScreen({ navigation, route }) {
   // Sounds Effect
   const [sound, setSound] = useState();
   async function playSoundTouch() {
-    console.log('Loading Sound');
     const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/touch.mp3`));
     setSound(sound);
-    console.log('Playing Sound');
     await sound.playAsync();
   }
   async function playSoundSuccess() {
-    console.log('Loading Sound');
     const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/done.mp3`));
     setSound(sound);
-    console.log('Playing Sound');
     await sound.playAsync();
   }
   async function playSoundFailure() {
-    console.log('Loading Sound');
     const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/failure.mp3`)
     );
     setSound(sound);
@@ -60,7 +55,7 @@ function QuizScreen({ navigation, route }) {
   const generateQuiz = route.params.level ? true : false;
   const title = generateQuiz ? `Cấp độ ${route.params.level}` : 'Câu hỏi tổng hợp';
 
-  const [nearScore, setNearScore] = useState('');
+  const [recentScore, setRecentScore] = useState('');
 
   // const [time, setTime] = useState(30);
   const [questions, setQuestions] = useState(route.params.questions);
@@ -100,8 +95,8 @@ function QuizScreen({ navigation, route }) {
     if(isEnd) {
       setIsShowResult(true);
       if (!route.params.level) {
-        setNearScore(route.params.highScore);
-        updateData(route.params.id,"highScore", totalScore.current, "quizsReview")
+        setRecentScore(route.params.highScore);
+        updateData(1,"recentScore", totalScore.current, "reviewData")
         // Play sound effect
         if (totalScore.current < 6) {
           playSoundFailure();
@@ -157,13 +152,13 @@ function QuizScreen({ navigation, route }) {
         animationOut="pulse"
       >
         <View style={styles.modalResult}>
-          <Text style={styles.textModal}>HOÀN THÀNH</Text>
-          <Text style={styles.text35Dark}>Điểm của em là: {totalScore.current}</Text>
+          <Text style={styles.textModal}>🎊HOÀN THÀNH🎊</Text>
+          <Text style={styles.text35Dark}>✨Điểm của em là: {totalScore.current}</Text>
           {
             route.params.level ?
-            <Text style={styles.text35Dark}>Điểm cao nhất của em là: {route.params.highScore}</Text>
+            <Text style={styles.text35Dark}>🎉Điểm cao nhất của em là: {route.params.highScore}</Text>
             :             
-            <Text style={styles.text35Dark}>Điểm đạt được lần trước: {nearScore}</Text>
+            <Text style={styles.text35Dark}>🎉Điểm đạt được lần trước: {recentScore}</Text>
           }
 
           <View style={{flexDirection:'row', width:'45%', justifyContent: 'space-between', marginTop: 20}}>
@@ -207,7 +202,7 @@ function QuizScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 50,
+    paddingTop: 25,
     paddingLeft: 30,
     paddingRight: 30,
     height: '100%',
@@ -275,7 +270,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   textModal: {
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#642900',
     marginBottom: 20,

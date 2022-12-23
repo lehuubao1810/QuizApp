@@ -12,23 +12,18 @@ const BoxOpts = (props) => {
 
     const [sound, setSound] = useState();
     async function playSoundRight() {
-        console.log('Loading Sound');
         const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/right.mp3`));
         setSound(sound);
-        console.log('Playing Sound');
         await sound.playAsync();
     }
     async function playSoundWrong() {
-        console.log('Loading Sound');
         const { sound } = await Audio.Sound.createAsync( require(`../assets/sounds/wrong.mp3`));
         setSound(sound);
-        console.log('Playing Sound');
         await sound.playAsync();
     }
     useEffect(() => {
         return sound
             ? () => {
-                console.log('Unloading Sound');
                 sound.unloadAsync();
             }
             : undefined;
