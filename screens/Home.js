@@ -17,7 +17,8 @@ function HomeScreen({ navigation }) {
     const [quizs, setQuizs] = useState([]);
     // const [quizsReview, setQuizsReview] = useState([]);
     const [reviewData, setReviewData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading1, setLoading1] = useState(true);
+    const [loading2, setLoading2] = useState(true);
 
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -25,14 +26,15 @@ function HomeScreen({ navigation }) {
         fetch('https://dataquizapp.glitch.me/reviewData')
             .then((response) => response.json())
             .then((json) => setReviewData(json))
-            .catch((error) => console.error(error));
+            .catch((error) => console.error(error))
+            .finally(() => setLoading1(false));
 
         fetch('https://dataquizapp.glitch.me/quizsLevels')
             .then((response) => response.json())
             .then((json) => setQuizs(json))
             .catch((error) => console.error(error))
             .finally(() => {
-                setLoading(false);
+                setLoading2(false);
             });
     }, []);
 
@@ -157,7 +159,7 @@ function HomeScreen({ navigation }) {
             <Image source={require('../assets/splash.png')} style={styles.logo}/>
         </View>  
 
-        {loading ? 
+        {loading2 ? 
             <View style={styles.loading}>
                 <ActivityIndicator size="large" color="#EC8944" />
             </View>
@@ -187,11 +189,12 @@ function HomeScreen({ navigation }) {
                 <Text style={[styles.text25Dark,{marginLeft: 5}]}>Ôn lại kiến thức</Text>
             </View>
 
-            {loading ? 
+            {loading1 ? 
             <View style={styles.loading}>
                 <ActivityIndicator size="large" color="#EC8944" />
             </View>
             :
+            
             <TouchableOpacity
                 style={[styles.boxExercise, {backgroundColor: '#B09364' }]}
                 onPress={() => {
@@ -257,7 +260,7 @@ function HomeScreen({ navigation }) {
             </View>
         </Modal>
         {
-            loading ? 
+            loading2 ? 
             <View style={styles.loading}>
                 <ActivityIndicator size="large" color="#EC8944" />
             </View>
@@ -267,6 +270,7 @@ function HomeScreen({ navigation }) {
             >
                 {
                     quizs.map((quiz, index) => {
+                        const questions = quiz.questions.sort(() => Math.random() - 0.5);
                         return (
                             <BoxEx navigation={navigation} 
                                 id={quiz.id}
@@ -274,12 +278,13 @@ function HomeScreen({ navigation }) {
                                 status={quiz.status}
                                 level={quiz.level} 
                                 highScore={quiz.highScore}
-                                questions={quiz.questions}
+                                questions={questions}
                                 time={quiz.time}
                                 isDisable={quiz.isDisable}
                                 setModalVisible={setModalVisible}
                                 playSoundTouch={playSoundTouch}
                                 playSoundLock={playSoundLock}
+                                quizsLength={quizs.length}
                             />
                         )
                     })

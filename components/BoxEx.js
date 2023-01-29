@@ -59,6 +59,7 @@ const BoxEx = (props) => {
                         highScore: props.highScore,
                         status: props.status,
                         id : props.id,
+                        quizsLength: props.quizsLength,
                     }
                 );
                 props.playSoundTouch();}}

@@ -120,7 +120,8 @@ function QuizScreen({ navigation, route }) {
           updateData(route.params.id,"status", 1, "quizsLevels");
         } else {
           updateData(route.params.id,"status", 2, "quizsLevels");
-          if (route.params.id < 5) {
+          // Unlock next level
+          if (route.params.id <= route.params.quizsLength) {
             updateData(route.params.id+1,"isDisable", false, "quizsLevels");
           }
         }
